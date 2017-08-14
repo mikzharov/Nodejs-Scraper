@@ -1,0 +1,29 @@
+{
+  "name": "node-api-scrapper",
+  "version": "0.0.1",
+  "description": "A project to scrap websites and make the data available via a REST API",
+  "main": "app.js",
+  "dependencies": {
+    "body-parser": "^1.17.2",
+    "cookie-parser": "^1.4.3",
+    "express": "^4.15.4",
+    "multer": "^1.3.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://bitbucket.org/mikzharov/nodejs-html-to-api.git"
+  },
+  "keywords": [
+    "html",
+    "api",
+    "scrapper",
+    "rest"
+  ],
+  "author": "Misha Zharov",
+  "license": "?",
+  "homepage": "https://bitbucket.org/mikzharov/nodejs-html-to-api#readme"
+}
