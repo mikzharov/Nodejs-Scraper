@@ -35,10 +35,17 @@ for (var i = 0; i < path.api_objects.get.length; i++) {
         console.log('Object ' + parsed_url.href + " does not have a port, using 80");
         option_port = 80;
     }
+    var option_path = "";
+    if(parsed_url.path){
+        option_path += parsed_url.path;
+    }
+    if(parsed_url.hash){
+        option_path += parsed_url.hash;
+    }
     var options = {
         host: parsed_url.hostname,//Sets hostname
         port: option_port,//Sets port to connect to
-        path: parsed_url.pathname,//Sets the pathname to fetch
+        path: option_path,//Sets the pathname to fetch
         path_parameters:'',
         method: path.api_objects.get[i].outbound_method,//Sets the method to use
         headers: path.api_objects.get[i].outbound_headers,
@@ -52,8 +59,13 @@ for (var i = 0; i < path.api_objects.get.length; i++) {
     app.get(path.api_objects.get[i].inbound_url, function (inbound_req, inbound_res) {
         //Replace outbound URL parameters with inbound_req parameters
 
-        Object.keys(inbound_req.params).forEach(function (key) {
-            options.path = options.path.replace(":" + key, inbound_req.params[key]);
+        Object.keys(inbound_req.params).forEach(function (key) {//"p:" for path parameters
+            if(key)
+            options.path = options.path.replace("p:" + key, inbound_req.params[key]);
+        });
+        Object.keys(inbound_req.query).forEach(function (key) {//"q:" for query parameters
+            if(key)
+            options.path = options.path.replace("q:" + key, inbound_req.query[key]);
         });
         //Same object for HTTP or HTTPS connection depending on switch statement below
         var outbound_req;
