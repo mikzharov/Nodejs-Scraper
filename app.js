@@ -15,45 +15,52 @@ for (var i = 0; i < path.api_objects.get.length; i++) {
     var outbound_security;//Whether to use HTTPS or HTTP
 
     //Makes sure port and protocol are correct
-    if (url.parse(path.api_objects.get[i].outbound_url).protocol) {
-        if (url.parse(path.api_objects.get[i].outbound_url).protocol == 'https:') {
+    const parsed_url = url.parse(path.api_objects.get[i].outbound_url);
+    if (parsed_url.protocol) {
+        if (parsed_url.protocol == 'https:') {
             option_port = 443;
             outbound_security = 'https:';
-        } else if (url.parse(path.api_objects.get[i].outbound_url).protocol == 'http:') {
+        } else if (parsed_url.protocol == 'http:') {
             option_port = 80;
             outbound_security = 'http:';
         } else {
-            console.log('Object ' + path.api_objects.get[i].outbound_url + " does not have a protocol, using HTTP");
+            console.log('Object ' + parsed_url.href + " does not have a protocol, using HTTP");
             outbound_security = 'http:';
         }
     }
     //Makes sure there is a port
-    if(url.parse(path.api_objects.get[i].outbound_url).port){
-        option_port = url.parse(path.api_objects.get[i].outbound_url).port;
-    }else if(!option_port){
-        console.log('Object ' + path.api_objects.get[i].outbound_url + " does not have a port, using 80");
+    if (parsed_url.port) {
+        option_port = parsed_url.port;
+    } else if (!option_port) {
+        console.log('Object ' + parsed_url.href + " does not have a port, using 80");
         option_port = 80;
     }
     var options = {
-        host: url.parse(path.api_objects.get[i].outbound_url).hostname,//Sets hostname
+        host: parsed_url.hostname,//Sets hostname
         port: option_port,//Sets port to connect to
-        path: url.parse(path.api_objects.get[i].outbound_url).pathname,//Sets the pathname to fetch
+        path: parsed_url.pathname,//Sets the pathname to fetch
+        path_parameters:'',
         method: path.api_objects.get[i].outbound_method,//Sets the method to use
+        headers: path.api_objects.get[i].outbound_headers,
     };
-
+    if(parsed_url.auth){
+        var auth_header = 'Basic ' + new Buffer(parsed_url.auth).toString('base64');
+        options.headers.Authorization = auth_header;
+    }
+    console.log(options.headers)
 
     app.get(path.api_objects.get[i].inbound_url, function (inbound_req, inbound_res) {
         //Replace outbound URL parameters with inbound_req parameters
-        Object.keys(inbound_req.params).forEach(function(key) {
-                console.log(key+" "+ inbound_req.params[key]);//TODO
+
+        Object.keys(inbound_req.params).forEach(function (key) {
+            options.path = options.path.replace(":" + key, inbound_req.params[key]);
         });
         //Same object for HTTP or HTTPS connection depending on switch statement below
         var outbound_req;
         //The result of the request
         var body = "";
         //The callback which parses the request
-        function callback (outbound_res) {
-            console.log(outbound_res.statusCode);
+        function callback(outbound_res) {
             outbound_res.on('data', function (d) {
                 body += d;
             });
